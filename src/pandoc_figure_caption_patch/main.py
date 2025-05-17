@@ -1,10 +1,9 @@
 #!/bin/env python
 import re
 import locale
-from click import group
 import panflute as pan
 from pandoc_figure_caption_patch.lib import Log, get_siblings
-SET_CITE = re.compile(r'^: ?(.*)\{#(.+)\}$')
+SET_CITE = re.compile(r'^: ?(.*?)(\{#(.+) *\})?$')
 _LANG = locale.getdefaultlocale()[0]
 LANG = _LANG if _LANG else 'en_US'
 I18N = {
@@ -26,27 +25,23 @@ def get_inner_images(elem: pan.Element):
     return imgs if imgs else None
 
 
-def action(elem: pan.Element, doc: pan.Doc):
-    if not isinstance(elem, (pan.Space, pan.Str, pan.MetaValue)):
-        Log(type(elem), str(elem)[:128])
+def action(elem: pan.Element, doc: pan.Doc) -> pan.Para | pan.Figure | pan.Element | pan.Space | pan.Str | pan.MetaValue:
+    # if not isinstance(elem, (pan.Space, pan.Str, pan.MetaValue)):
+    #     Log(type(elem), str(elem)[:128])
     if IS_DOC_XML:
         if isinstance(elem, pan.Para):
             imgs_elems = get_inner_images(elem)
             if not imgs_elems:
                 cite = get_cite(elem)
                 cite = any(cite) if cite else None
-                if cite:
-                    return pan.Para(pan.Str(''))
-                return elem
+                return pan.Para(pan.Str('')) if cite else elem
             siblings, idx = get_siblings(elem)
-            _prev_elem = siblings[idx - 1] if idx > 0 else None
+            # _prev_elem = siblings[idx - 1] if idx > 0 else None
             _next_elem = siblings[idx + 1] if idx < len(siblings) - 1 else None
-            _prev_cite = get_cite(_prev_elem) if _prev_elem else None
+            # _prev_cite = get_cite(_prev_elem) if _prev_elem else None
             _next_cite = get_cite(_next_elem) if _next_elem else None
-            if _prev_cite:
-                title, Id = _prev_cite
-            elif _next_cite:
-                title, Id = _next_cite
+            if _next_cite:
+                title, _, Id = _next_cite
             else:
                 return elem
             img = imgs_elems[0]  # TODO
@@ -59,6 +54,7 @@ def action(elem: pan.Element, doc: pan.Doc):
             if Id:
                 _kwargs.update({'identifier': Id})
             figure = pan.Figure(pan.Para(img), **_kwargs)
+            Log(f'{figure=}')
             return figure
     # TODO: difference
     # mine:   Figure(Plain(Image(Str(I) Space Str(love); url='...')); identifier='fig:img')
@@ -66,7 +62,7 @@ def action(elem: pan.Element, doc: pan.Doc):
     return elem
 
 
-def get_cite(elem: pan.Element) -> tuple[str | None, str | None] | None:
+def get_cite(elem: pan.Element) -> tuple[str | None, str | None, str | None] | None:
     if isinstance(elem, pan.Para):
         cite = SET_CITE.search(pan.stringify(elem).strip())
         return cite.groups() if cite else None  # type: ignore
