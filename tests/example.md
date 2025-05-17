@@ -7,10 +7,14 @@ titleDelim: " "
 chapDelim: "-"
 figPrefix: [""]
 tblPrefix: [""]
+autoFigLabels: true
 ---
+
 # Abstract
 
 ![I love markdown](https://images7.memedroid.com/images/UPLOADED819/64a1d3e2c44ae.jpeg){#fig:img}
+
+![I love markdown](https://images7.memedroid.com/images/UPLOADED819/64a1d3e2c44ae.jpeg)
 
 img如图[@fig:img]
 
@@ -40,3 +44,4 @@ AClon -> Nolca: Client Hello
 Nolca -> Molia: meh
 @enduml
 ```
+: desc

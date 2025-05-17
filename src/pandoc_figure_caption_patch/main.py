@@ -1,21 +1,27 @@
 #!/bin/env python
 import re
-import locale
+# import locale
 import panflute as pan
+from typing import overload
 from pandoc_figure_caption_patch.lib import Log, get_siblings
 SET_CITE = re.compile(r'^: ?(.*?)(\{#(.+) *\})?$')
-_LANG = locale.getdefaultlocale()[0]
-LANG = _LANG if _LANG else 'en_US'
-I18N = {
-    'warn_no_template': {
-        'en_US': '⚠️ Not found `template: {temp}` as reference-doc in input metadata, you may have to adjust the format of new section, which fallback to pandoc default docx!',
-        'zh_CN': '⚠️ 在元数据中未找到`template: {temp}`字段，您可能要调整新节的页边距等格式，回退到pandoc原生docx模板！',
-    }
-}
+NUM_FIG = 0
+# _LANG = locale.getdefaultlocale()[0]
+# LANG = _LANG if _LANG else 'en_US'
+@overload
+def get_metadata(doc: pan.Doc, key: str, default: str) -> str: ...
+@overload
+def get_metadata(doc: pan.Doc, key: str, default=None) -> str | None: ...
 
 
 def get_metadata(doc: pan.Doc, key: str, default: str | None = None):
-    return pan.stringify(doc.metadata[key]) if key in doc.metadata else default
+    if key in doc.metadata:
+        if isinstance(doc.metadata[key], pan.MetaBool):
+            return bool(doc.metadata[key])
+        else:
+            return pan.stringify(doc.metadata[key])
+    else:
+        return default
 
 
 def get_inner_images(elem: pan.Element):
@@ -28,6 +34,7 @@ def get_inner_images(elem: pan.Element):
 def action(elem: pan.Element, doc: pan.Doc) -> pan.Para | pan.Figure | pan.Element | pan.Space | pan.Str | pan.MetaValue:
     # if not isinstance(elem, (pan.Space, pan.Str, pan.MetaValue)):
     #     Log(type(elem), str(elem)[:128])
+    global NUM_FIG
     if IS_DOC_XML:
         if isinstance(elem, pan.Para):
             imgs_elems = get_inner_images(elem)
@@ -42,6 +49,15 @@ def action(elem: pan.Element, doc: pan.Doc) -> pan.Para | pan.Figure | pan.Eleme
             _next_cite = get_cite(_next_elem) if _next_elem else None
             if _next_cite:
                 title, _, Id = _next_cite
+                if not title:
+                    title = ' '
+                if not Id:
+                    Id = f'fig:autoNum_{NUM_FIG}'
+                    NUM_FIG += 1
+            elif IS_AUTO_FIG:
+                title = f' '
+                Id = f'fig:autoNum_{NUM_FIG}'
+                NUM_FIG += 1
             else:
                 return elem
             img = imgs_elems[0]  # TODO
@@ -56,6 +72,12 @@ def action(elem: pan.Element, doc: pan.Doc) -> pan.Para | pan.Figure | pan.Eleme
             figure = pan.Figure(pan.Para(img), **_kwargs)
             Log(f'{figure=}')
             return figure
+        elif IS_AUTO_FIG and isinstance(elem, pan.Figure) and not elem.identifier:
+            elem.identifier = f'fig:autoNum_{NUM_FIG}'
+            NUM_FIG += 1
+            Log(f'🤖 {elem=}')
+            return elem
+
     # TODO: difference
     # mine:   Figure(Plain(Image(Str(I) Space Str(love); url='...')); identifier='fig:img')
     # pandoc: Figure(Para(Image(; url='...', title='uml ', identifier='fig:uml')); identifier='fig:uml')
@@ -71,9 +93,10 @@ def get_cite(elem: pan.Element) -> tuple[str | None, str | None, str | None] | N
 
 
 def prepare(doc: pan.Doc):
-    global IS_DOC_XML
+    global IS_DOC_XML, IS_AUTO_FIG
     if 'doc' in doc.format:
         IS_DOC_XML = True
+        IS_AUTO_FIG = get_metadata(doc, 'autoFigLabels', False)
     elif doc.format == 'html' or 'markdown' in doc.format:
         ...
     else:

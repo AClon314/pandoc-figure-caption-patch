@@ -26,6 +26,10 @@ pip install git+https://github.com/AClon314/pandoc-figure-caption-patch.git
 ## Usage 用法
 
 ~~~markdown
+---
+autoFigLabels: true
+---
+
 ```mermaid
 graph LR
 A --> B
@@ -37,4 +41,14 @@ A -> B
 ```
 : uml's caption {#fig:uml}
 
+~~~
+
+## ~~TODO~~
+
+~~support manually auto-number like:~~
+
+~~~html
+<num fig/>
+<num tbl/>
+<num eq/>
 ~~~
