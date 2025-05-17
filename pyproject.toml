@@ -1,0 +1,44 @@
+# Edit every `package-name`, `author-name` and other settings to match your project.
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.0", "wheel"]
+
+[project]
+authors = [
+  {name = "AClon314", email = "aclon-e@qq.com"},
+]
+description = "add caption for mermaid/plantuml..."
+keywords = ["pandoc", "markdown", "docx", "caption", "mermaid", "plantuml"]
+license = {file = "LICENSE"}
+name = "pandoc-figure-caption-patch"
+readme = "README.md"
+version = "0.1.0"
+
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.11"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[project.scripts]
+pandoc-figure-caption-patch = "pandoc_figure_caption_patch.main:main"
+
+[project.urls]
+Download = "http://github.com/AClon314/pandoc-figure-caption-patch/releases"
+Homepage = "http://github.com/AClon314/pandoc-figure-caption-patch"
