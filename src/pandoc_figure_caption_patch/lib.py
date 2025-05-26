@@ -11,6 +11,9 @@ else:
     Log = lambda *args, **kwargs: None
 
 
+def _overflow(text: str, half_len=128): return text if len(text) < half_len * 2 else text[:half_len] + '...' + text[-half_len:]
+
+
 def get_siblings(elem: pan.Element) -> tuple[Sequence[pan.Element], int]:
     """
     Get the siblings of an element, and its index in the siblings list.

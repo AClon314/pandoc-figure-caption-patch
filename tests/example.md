@@ -8,6 +8,7 @@ chapDelim: "-"
 figPrefix: [""]
 tblPrefix: [""]
 autoFigLabels: true
+plot-configuration: plot.yaml
 ---
 
 # Abstract

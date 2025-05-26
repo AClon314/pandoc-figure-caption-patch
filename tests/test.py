@@ -60,11 +60,12 @@ def pandoc(input: str, output: str, yaml: str | None = None, args=[], **kwargs):
 
 
 def test_md_to_docx():
+    os.environ['DEBUG'] = '1'
     output = pandoc(MD, DOCX, filter=[
-        'chart-filter', 'pandoc-plantuml', 'pandoc-figure-caption-patch', 'pandoc-crossref'
+        'pandoc-plot', 'pandoc-figure-caption-patch', 'pandoc-crossref'
     ])
-    To = unzip(output)
-    xml = os.path.join(To, 'word', 'document.xml')
+    # To = unzip(output)
+    # xml = os.path.join(To, 'word', 'document.xml')
     assert output
 
 
