@@ -60,7 +60,7 @@ def docx(elem: pan.Element):
             Id = f'fig:autoNum_{NUM_FIG}'
             NUM_FIG += 1
     elif IS_AUTO_FIG:
-        title = f' '
+        title = pan.stringify(img.content)
         Id = f'fig:autoNum_{NUM_FIG}'
         NUM_FIG += 1
     else:
@@ -79,8 +79,8 @@ def docx(elem: pan.Element):
 
 
 def action(elem: pan.Element, doc: pan.Doc):
-    if not isinstance(elem, (pan.Space, pan.MetaValue)):
-        Log('🐞 ', type(elem), _overflow(str(elem)))
+    # if not isinstance(elem, (pan.Space, pan.MetaValue)):
+    #     Log('🐞 ', type(elem), _overflow(str(elem)))
     if IS_DOC_XML:
         return docx(elem)
         # TODO: difference
